@@ -1,0 +1,3 @@
+boto3>=1.34
+aws-sam-cli>=1.120
+pytest>=8.0

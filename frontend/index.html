@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Cloud Q&A — prototype</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; }
+  textarea { width: 100%; height: 6rem; font-family: inherit; font-size: 1rem; }
+  button { margin-top: 0.5rem; padding: 0.5rem 1rem; }
+  #answer { white-space: pre-wrap; border-left: 3px solid #999; padding-left: 1rem; margin-top: 1rem; min-height: 2rem; }
+  code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <h1>Ask a question</h1>
+  <p>
+    Rough prototype client for the <code>/ask</code> API. Edit <code>API_URL</code>
+    below (or set <code>window.API_URL</code> before this script runs) to point at
+    your deployed API Gateway endpoint. With no deployment yet, this will just
+    fail to fetch — that's expected until you run <code>scripts/deploy.sh</code>.
+  </p>
+  <textarea id="question" placeholder="Ask anything..."></textarea>
+  <br />
+  <button id="ask">Ask</button>
+  <div id="answer"></div>
+
+  <script>
+    const API_URL = window.API_URL || "http://localhost:3000/ask";
+
+    document.getElementById("ask").addEventListener("click", async () => {
+      const question = document.getElementById("question").value;
+      const answerEl = document.getElementById("answer");
+      answerEl.textContent = "Thinking...";
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        });
+        const data = await res.json();
+        answerEl.textContent = data.answer || data.error || "No response.";
+      } catch (err) {
+        answerEl.textContent = `Request failed (is the API deployed? see README): ${err}`;
+      }
+    });
+  </script>
+</body>
+</html>

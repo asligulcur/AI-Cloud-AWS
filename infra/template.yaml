@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Starting architecture for the AI Cloud Q&A prototype, built for the AWS
+  Academy Learner Lab sandbox. Fully serverless (API Gateway -> Lambda ->
+  Bedrock, with DynamoDB logging) to avoid idle-cost resources like EC2,
+  NAT gateways, or load balancers, and to fit within the Lab's $50 budget.
+  Uses the pre-provisioned Learner Lab "LabRole" since the sandbox does not
+  allow creating custom IAM roles/policies.
+
+Parameters:
+  LabRoleArn:
+    Type: String
+    Description: >
+      ARN of the pre-provisioned AWS Academy Learner Lab execution role,
+      e.g. arn:aws:iam::<account-id>:role/LabRole. Find it under
+      IAM > Roles in the Lab account, or via the Lab's AWS Details panel.
+  BedrockModelId:
+    Type: String
+    Default: anthropic.claude-3-haiku-20240307-v1:0
+    Description: Bedrock model id to invoke. Must be enabled in Bedrock model access.
+  StubMode:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Force stubbed responses instead of calling Bedrock.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: python3.12
+
+Resources:
+  QaLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: qa-log
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  AskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ask-handler
+      CodeUri: ../src/app/
+      Handler: handler.lambda_handler
+      Role: !Ref LabRoleArn
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+          STUB_MODE: !Ref StubMode
+          QA_LOG_TABLE: !Ref QaLogTable
+      Events:
+        Ask:
+          Type: HttpApi
+          Properties:
+            Path: /ask
+            Method: POST
+
+Outputs:
+  ApiUrl:
+    Description: Invoke URL for the /ask endpoint
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/ask"
+  QaLogTableName:
+    Description: DynamoDB table storing question/answer history
+    Value: !Ref QaLogTable

@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
+# AWS credentials (never commit these)
+.aws/
+*.pem
+
+# Editors / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
