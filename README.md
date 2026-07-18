@@ -22,6 +22,14 @@ for what we learned deploying into this specific sandbox, and
 [`docs/PROVENANCE.md`](docs/PROVENANCE.md) for what in this repo is
 human-written vs. agent-generated.
 
+## Demo
+
+The frontend running against the live deployment above, answering via the
+stub path (Bedrock isn't confirmed reachable in this Lab account — see
+[`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md)):
+
+![Frontend asking a question and receiving a stubbed response](docs/screenshots/frontend-demo.png)
+
 ## Repo structure
 
 ```
