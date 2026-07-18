@@ -9,7 +9,11 @@ runs today even before model access is configured.
 **Live deployment:** `https://b7c2qhtbn9.execute-api.us-east-1.amazonaws.com/ask`
 (deployed in the team's AWS Academy Learner Lab account; currently answers
 via the stub path — see [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md)
-for why).
+for why). **This is a POST-only API endpoint, not a webpage** — opening it
+directly in a browser sends a GET request, which doesn't match any route
+and shows a blank/404 response. That's expected, not a bug. To actually see
+it work, use the frontend (see "Try the frontend" below) or `curl -X POST`
+(see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design
 narrative and diagram, [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how to
