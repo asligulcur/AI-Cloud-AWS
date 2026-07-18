@@ -30,6 +30,15 @@ Globals:
     Timeout: 30
     MemorySize: 256
     Runtime: python3.12
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - "*"
+      AllowHeaders:
+        - "content-type"
+      AllowMethods:
+        - POST
+        - OPTIONS
 
 Resources:
   QaLogTable:
