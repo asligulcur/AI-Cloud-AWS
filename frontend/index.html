@@ -15,10 +15,11 @@
 <body>
   <h1>Ask a question</h1>
   <p>
-    Rough prototype client for the <code>/ask</code> API. Edit <code>API_URL</code>
-    below (or set <code>window.API_URL</code> before this script runs) to point at
-    your deployed API Gateway endpoint. With no deployment yet, this will just
-    fail to fetch — that's expected until you run <code>scripts/deploy.sh</code>.
+    Rough prototype client for the <code>/ask</code> API. The default
+    <code>API_URL</code> below points at the team's current deployment in the
+    AWS Academy Learner Lab sandbox — replace it with your own stack's
+    <code>ApiUrl</code> output (see <code>docs/DEPLOYMENT.md</code>) if you've
+    deployed a separate copy.
   </p>
   <textarea id="question" placeholder="Ask anything..."></textarea>
   <br />
@@ -26,7 +27,7 @@
   <div id="answer"></div>
 
   <script>
-    const API_URL = window.API_URL || "http://localhost:3000/ask";
+    const API_URL = window.API_URL || "https://b7c2qhtbn9.execute-api.us-east-1.amazonaws.com/ask";
 
     document.getElementById("ask").addEventListener("click", async () => {
       const question = document.getElementById("question").value;

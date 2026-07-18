@@ -34,31 +34,46 @@ true in this account, not just the intended design.
 - Lambda caps at 10 concurrent execution environments — irrelevant for a
   demo, just noting.
 
+## Resolution (2026-07-18)
+
+Deployed for real via AWS CloudShell against account `485762611572` in
+`us-east-1`. Two issues turned up and were fixed along the way:
+
+1. **Region**: `scripts/deploy.sh` didn't pin a region — fixed, now
+   defaults to `us-east-1` (overridable via `AWS_REGION`).
+2. **Python runtime mismatch**: `sam build` failed locally because
+   CloudShell only has Python 3.13 installed, not the 3.12 the template
+   asked for, and CloudShell has no Docker for a `--use-container` build.
+   Fixed by bumping `infra/template.yaml`'s Lambda runtime to
+   `python3.13` (a supported Lambda runtime) to match what's actually on
+   CloudShell's PATH.
+
+After those fixes, the stack (`ai-cloud-qa-starter`) deployed cleanly and
+`curl`-ing the live `/ask` endpoint returned a valid JSON response.
+**Confirmed: Bedrock is not currently reachable from this account** — the
+deployed Lambda's `InvokeModel` call fails over to the stub path, matching
+the earlier suspicion that Bedrock is absent from this Lab's
+supported-services list. Decision for now: **ship stub-only**; live model
+access (Bedrock or a direct Anthropic API call) is a follow-up, not a
+blocker for this submission.
+
 ## Checklist — next steps
 
-- [ ] **Start a Lab session and check the Bedrock console directly**
-      (search "Bedrock" in us-east-1) — does it load, and is there a
-      Model access page? This one finding determines everything below.
-- [ ] **If Bedrock works:** request/enable access to the Claude Haiku
-      model, deploy, and confirm live (non-stub) answers.
-- [ ] **If Bedrock is blocked/absent:** decide between (a) staying
-      stub-only for submission — fully acceptable per the assignment's
-      own wording — or (b) adding a direct Anthropic API call as the real
-      model path instead, using Secrets Manager (supported) to hold the
-      API key. Option (b) needs an Anthropic API key.
-- [ ] Pin the deploy region to `us-east-1` in `scripts/deploy.sh` / SAM
-      config.
-- [ ] Get temporary credentials from **AWS Details → AWS CLI** into
-      `~/.aws/credentials`.
-- [ ] `export LAB_ROLE_ARN=$(aws iam get-role --role-name LabRole --query Role.Arn --output text)`
-- [ ] Run `./scripts/deploy.sh` and confirm the stack comes up.
-- [ ] Hit the deployed `/ask` endpoint and confirm you get a response
-      (stub or live).
-- [ ] Update `docs/ARCHITECTURE.md` with whichever outcome is real for
-      this account — don't leave the narrative describing a component
-      that turned out to be unavailable.
-- [ ] Fill in `docs/PROVENANCE.md` with actual review notes once the
-      above is done.
+- [x] Start a Lab session and check whether Bedrock is reachable —
+      confirmed not reachable via a live deployed `InvokeModel` call.
+- [ ] ~~If Bedrock works: enable Claude Haiku access~~ — deferred; not
+      pursuing for this submission.
+- [x] Decided: staying stub-only for now, per the assignment's own
+      allowance for a stubbed response.
+- [x] Pinned the deploy region to `us-east-1` in `scripts/deploy.sh`.
+- [x] Got temporary credentials via AWS CloudShell (no manual credential
+      copying needed).
+- [x] Got the LabRole ARN: `arn:aws:iam::485762611572:role/LabRole`.
+- [x] Ran `./scripts/deploy.sh` — stack `ai-cloud-qa-starter` created
+      successfully.
+- [x] Hit the deployed `/ask` endpoint — confirmed valid JSON response
+      (stub).
+- [x] Updated `docs/ARCHITECTURE.md` to reflect the real, verified state.
+- [x] Updated `docs/PROVENANCE.md` with actual review/deployment notes.
 - [ ] Watch the budget banner; `sam delete --stack-name
-      ai-cloud-qa-starter` when done for the day, per the Lab's own
-      recommendation for CloudFormation-managed resources.
+      ai-cloud-qa-starter --region us-east-1` when done for the day/term.

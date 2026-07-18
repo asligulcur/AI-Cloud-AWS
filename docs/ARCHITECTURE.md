@@ -1,5 +1,12 @@
 # Architecture
 
+> **Status:** Deployed and verified in the AWS Academy Learner Lab
+> (`us-east-1`, stack `ai-cloud-qa-starter`). `/ask` responds correctly end
+> to end. Live Bedrock responses are not yet confirmed working in this
+> account — see "Known gaps" below — so it currently answers via the stub
+> path. See [`docs/LEARNER_LAB_REVIEW.md`](LEARNER_LAB_REVIEW.md) and
+> [`docs/DEPLOYMENT.md`](DEPLOYMENT.md) for the deployment walkthrough.
+
 ## What this is
 
 A starting architecture for a Q&A prototype: a client submits a question over
@@ -95,13 +102,24 @@ flowchart LR
 
 ## Known gaps / next steps
 
+- **Bedrock is not confirmed working in this Learner Lab account.** It
+  doesn't appear in the Lab's supported-services list, and a live deployed
+  call to `InvokeModel` fails over to the stub path (caught by the
+  try/except in `_invoke_bedrock`), rather than returning a model answer.
+  The architecture and code both already assume this is possible (Bedrock
+  isn't a hard dependency anywhere), so the fix, if pursued, is scoped to
+  either: (a) get Bedrock model access enabled for this account, or (b)
+  swap the model call to a directly-invoked API (e.g. Anthropic's API,
+  with the key held in Secrets Manager) behind the same
+  `answer_question()` interface. Until then, the deployed prototype is
+  intentionally stub-only, which is an accepted state for this submission.
 - No authentication on the `/ask` endpoint — fine for a Lab prototype behind
   a private URL, not for anything public.
 - No retrieval/grounding — this is a plain LLM call, not RAG. If the project
   moves toward a domain-grounded assistant, the natural next component is a
   vector store (e.g., OpenSearch Serverless or a Bedrock Knowledge Base) sitting
   between the Lambda and Bedrock.
-- No rate limiting or cost guardrails on Bedrock calls — worth adding
+- No rate limiting or cost guardrails on model calls — worth adding
   (API Gateway usage plan + throttling) before any wider usage, given the
   fixed Lab budget.
 - Frontend is unhosted (opened locally); moving it to an S3 static website
