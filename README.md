@@ -6,9 +6,17 @@ question, calls Amazon Bedrock for a model-generated answer, and falls back
 to a clearly-labeled stub if Bedrock isn't reachable yet — so the prototype
 runs today even before model access is configured.
 
+**Live deployment:** `https://b7c2qhtbn9.execute-api.us-east-1.amazonaws.com/ask`
+(deployed in the team's AWS Academy Learner Lab account; currently answers
+via the stub path — see [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md)
+for why).
+
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design
-narrative and diagram, and [`docs/PROVENANCE.md`](docs/PROVENANCE.md) for
-what in this repo is human-written vs. agent-generated.
+narrative and diagram, [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how to
+deploy your own copy, [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md)
+for what we learned deploying into this specific sandbox, and
+[`docs/PROVENANCE.md`](docs/PROVENANCE.md) for what in this repo is
+human-written vs. agent-generated.
 
 ## Repo structure
 
@@ -57,8 +65,8 @@ what in this repo is human-written vs. agent-generated.
 ## Clone and run
 
 ```bash
-git clone <this-repo-url>
-cd ai-cloud-qa-starter
+git clone https://github.com/asligulcur/AI-Cloud-AWS.git
+cd AI-Cloud-AWS
 pip install -r requirements-dev.txt   # or: reopen in the dev container
 ```
 
@@ -75,9 +83,15 @@ python scripts/run_local.py "What is an S3 bucket?"
 pytest
 ```
 
-**Try the frontend:** open `frontend/index.html` directly in a browser. It
-will fail to reach an API until one is deployed (see below) — that's
-expected.
+**Try the frontend:** its default `API_URL` already points at the live
+deployment above, so opening it should work right away. Serve it over
+local HTTP rather than opening the file directly — some browsers (Safari
+in particular) block `fetch()` calls from a bare `file://` page:
+
+```bash
+cd frontend && python3 -m http.server 8000
+# then open http://localhost:8000/index.html
+```
 
 ## Deploying to the AWS Academy Learner Lab
 
@@ -87,9 +101,11 @@ expected.
    ```bash
    export LAB_ROLE_ARN=$(aws iam get-role --role-name LabRole --query Role.Arn --output text)
    ```
-3. (Optional, for live answers instead of the stub) In the Bedrock console,
-   under **Model access**, enable the model referenced by
-   `BEDROCK_MODEL_ID` in `infra/template.yaml` (default: Claude Haiku).
+3. (Optional, for live answers instead of the stub) Bedrock is not
+   confirmed reachable from this Lab account — see
+   [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md). If you want
+   to try anyway: Bedrock console → **Model access** → enable the model
+   referenced by `BEDROCK_MODEL_ID` in `infra/template.yaml`.
 4. Deploy:
    ```bash
    ./scripts/deploy.sh
