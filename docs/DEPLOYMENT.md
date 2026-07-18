@@ -28,6 +28,11 @@ configured for the Lab account.
    export LAB_ROLE_ARN=$(aws iam get-role --role-name LabRole --query Role.Arn --output text)
    ./scripts/deploy.sh
    ```
+   If this fails with a Python-version error (`PythonPipBuilder:Validation`),
+   CloudShell's local Python doesn't match the runtime pinned in
+   `infra/template.yaml` — see [`LEARNER_LAB_REVIEW.md`](LEARNER_LAB_REVIEW.md)
+   for the fix (bumping the template's `Runtime` to match what's actually
+   on CloudShell's PATH).
 6. When it finishes, `sam deploy` prints an **Outputs** section with
    `ApiUrl`. Test it:
    ```bash
@@ -36,6 +41,16 @@ configured for the Lab account.
    You should get back a JSON response — `"source": "stub"` unless Bedrock
    access is confirmed working (see
    [`LEARNER_LAB_REVIEW.md`](LEARNER_LAB_REVIEW.md)).
+7. To see the actual frontend (not just curl), point `frontend/index.html`'s
+   `API_URL` at your `ApiUrl` output, then serve it locally rather than
+   opening the file directly — Safari blocks `fetch()` from a bare `file://`
+   page:
+   ```bash
+   cd frontend && python3 -m http.server 8000
+   # open http://localhost:8000/index.html
+   ```
+   CORS is already enabled on the API (`infra/template.yaml`'s
+   `HttpApi.CorsConfiguration`) specifically so this works from a browser.
 
 ## Option B: Locally (or in the devcontainer), against the Lab account
 
@@ -61,14 +76,15 @@ CloudShell is less fiddly since there's no credential-copying step and no
 risk of stale/expired keys sitting in `~/.aws/credentials` after the
 session ends — start there if unsure.
 
-## Before deploying: stub vs. live
+## Current status: stub vs. live
 
-Decide whether to attempt live Bedrock now, or deploy stub-only first to
-confirm the pipeline works end-to-end, and tackle Bedrock/Anthropic
-separately. Either is fine — the stack deploys and runs the same either
-way, since the stub fallback is automatic. See
-[`LEARNER_LAB_REVIEW.md`](LEARNER_LAB_REVIEW.md) for the open question on
-Bedrock availability in this account.
+The team's live deployment has been verified end-to-end (via `curl` and
+the actual frontend in a browser) and currently runs **stub-only** —
+Bedrock's `InvokeModel` call fails over to the stub path in this account,
+consistent with Bedrock not appearing in the Lab's supported-services
+list. See [`LEARNER_LAB_REVIEW.md`](LEARNER_LAB_REVIEW.md) for the full
+finding. Going live (via Bedrock model access, or a direct Anthropic API
+call instead) is a deliberate follow-up, not a blocker.
 
 ## Tearing down
 

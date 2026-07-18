@@ -37,7 +37,7 @@ constrains the design in three ways:
 | Component | Description |
 |---|---|
 | **Static client** (`frontend/index.html`) | A single-page form: types a question, POSTs it, renders the answer. No build step — plain HTML/JS so it can be opened locally or dropped into an S3 static-website bucket later. |
-| **Amazon API Gateway (HTTP API)** | Public HTTPS entry point. Routes `POST /ask` to the Lambda function. Chosen over REST API for lower cost and simpler config for a single-route prototype. |
+| **Amazon API Gateway (HTTP API)** | Public HTTPS entry point. Routes `POST /ask` to the Lambda function, with CORS enabled (`AllowOrigins: *`) so the static client can call it directly from a browser. Chosen over REST API for lower cost and simpler config for a single-route prototype. |
 | **AWS Lambda — `ask-handler`** (`src/app/handler.py`) | Validates the request, calls the Q&A service, returns JSON. Runs on-demand only — no idle cost, no server to patch or leave running across sessions. |
 | **Q&A service** (`src/app/qa_service.py`) | Core logic, decoupled from the Lambda entry point so it can be run locally (`scripts/run_local.py`) or unit tested without any AWS dependency. |
 | **Amazon Bedrock** | Managed foundation-model inference (default: Anthropic Claude Haiku via Bedrock). No model hosting or GPU management — pay per token, nothing running when idle. |
@@ -122,5 +122,8 @@ flowchart LR
 - No rate limiting or cost guardrails on model calls — worth adding
   (API Gateway usage plan + throttling) before any wider usage, given the
   fixed Lab budget.
-- Frontend is unhosted (opened locally); moving it to an S3 static website
-  bucket is a small follow-up once the API is deployed and stable.
+- Frontend is unhosted — served locally via `python3 -m http.server` rather
+  than a permanent URL (opening the HTML file directly via `file://` fails
+  in some browsers, notably Safari, since they block `fetch()` from that
+  origin). Moving it to an S3 static website bucket is a small follow-up
+  once the API is deployed and stable.

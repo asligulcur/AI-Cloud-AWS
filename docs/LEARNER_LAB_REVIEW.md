@@ -57,6 +57,18 @@ supported-services list. Decision for now: **ship stub-only**; live model
 access (Bedrock or a direct Anthropic API call) is a follow-up, not a
 blocker for this submission.
 
+A third issue turned up testing the actual frontend (not just `curl`) in a
+browser: the API Gateway HTTP API had no CORS configuration, so
+`fetch()` from `frontend/index.html` failed even though `curl` worked fine
+(curl doesn't enforce CORS; browsers do). Fixed by adding
+`HttpApi.CorsConfiguration` (`AllowOrigins: ["*"]`) to
+`infra/template.yaml` and redeploying. Separately, opening the frontend
+via a bare `file://` URL failed in Safari specifically (it restricts
+`fetch()` from that origin); serving it locally via
+`python3 -m http.server` resolved that. With both fixes in place, the
+frontend was confirmed working end-to-end in an actual browser, not just
+via `curl`.
+
 ## Checklist — next steps
 
 - [x] Start a Lab session and check whether Bedrock is reachable —
