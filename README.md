@@ -99,24 +99,61 @@ cd frontend && python3 -m http.server 8000
 
 ## Deploying to the AWS Academy Learner Lab
 
-1. Start your Lab session and copy the temporary credentials from
-   **AWS Details > AWS CLI** into `~/.aws/credentials`.
-2. Get your Lab's execution role ARN:
+This is the path we actually used to deploy — AWS CloudShell, run from
+inside the Lab's real AWS Console. It needs nothing installed on your own
+machine and avoids copying temporary credentials around by hand (full
+details, plus a local-machine alternative, are in
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
+
+1. In the Lab page, click **Start Lab**, then click the green **AWS**
+   indicator near the top (next to the budget/timer) to open the real
+   **AWS Management Console** in a new tab.
+   - Note: the terminal built into the Lab page itself (next to
+     Readme/AWS Details) is *not* this — it runs under a separate,
+     more restricted identity and can't be used for this deploy.
+2. In the AWS Console, confirm the region (top right) is **US East (N.
+   Virginia) / us-east-1** — the Lab only permits `us-east-1` or
+   `us-west-2`.
+3. Click the terminal icon (`>_`) in the top nav bar to open **AWS
+   CloudShell**. It comes with the AWS CLI already configured for this
+   account — no manual credential setup needed.
+4. In CloudShell, clone the repo and install the SAM CLI (not
+   preinstalled in CloudShell):
+   ```bash
+   git clone https://github.com/asligulcur/AI-Cloud-AWS.git
+   cd AI-Cloud-AWS
+   pip install --user aws-sam-cli
+   export PATH="$HOME/.local/bin:$PATH"
+   ```
+5. Get the Lab's execution role ARN (Lambda runs as this role — the Lab
+   doesn't allow creating custom IAM roles):
    ```bash
    export LAB_ROLE_ARN=$(aws iam get-role --role-name LabRole --query Role.Arn --output text)
    ```
-3. (Optional, for live answers instead of the stub) Bedrock is not
+6. Deploy:
+   ```bash
+   ./scripts/deploy.sh
+   ```
+   This runs `sam build` then `sam deploy`. First-time builds in
+   CloudShell may hit a Python-version mismatch (CloudShell's local
+   Python doesn't always match the Lambda runtime pinned in
+   `infra/template.yaml`) — see
+   [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md) for the fix
+   we needed the first time this happened.
+7. When it finishes, `sam deploy` prints an **Outputs** section with
+   `ApiUrl`. Test it directly (remember, it's a POST-only endpoint, not a
+   webpage):
+   ```bash
+   curl -X POST "<ApiUrl-from-output>" -H "Content-Type: application/json" -d '{"question":"What is S3?"}'
+   ```
+8. (Optional, for live answers instead of the stub) Bedrock is not
    confirmed reachable from this Lab account — see
    [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md). If you want
    to try anyway: Bedrock console → **Model access** → enable the model
    referenced by `BEDROCK_MODEL_ID` in `infra/template.yaml`.
-4. Deploy:
-   ```bash
-   ./scripts/deploy.sh
-   ```
-5. Point the frontend at the deployed API: open `frontend/index.html` with
-   `window.API_URL` set to the `ApiUrl` output from the deploy, e.g. via the
-   browser console, or by editing the `API_URL` constant directly.
+9. Point the frontend at your own deployed API if it differs from the
+   live one linked above: edit the `API_URL` constant in
+   `frontend/index.html`, or set `window.API_URL` before the script runs.
 
 **Budget note:** everything here is pay-per-request. Nothing bills while
 idle, but it's still good practice to `sam delete --stack-name
