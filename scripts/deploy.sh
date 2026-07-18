@@ -19,10 +19,14 @@ if [[ -z "$LAB_ROLE_ARN" ]]; then
   exit 1
 fi
 
+# Learner Lab restricts service access to us-east-1 or us-west-2.
+AWS_REGION="${AWS_REGION:-us-east-1}"
+
 sam build --template-file infra/template.yaml
 
 sam deploy \
   --stack-name ai-cloud-qa-starter \
+  --region "${AWS_REGION}" \
   --resolve-s3 \
   --capabilities CAPABILITY_IAM \
   --parameter-overrides "LabRoleArn=${LAB_ROLE_ARN}" \
