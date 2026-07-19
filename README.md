@@ -22,6 +22,29 @@ for what we learned deploying into this specific sandbox, and
 [`docs/PROVENANCE.md`](docs/PROVENANCE.md) for what in this repo is
 human-written vs. agent-generated.
 
+## Assignment deliverables
+
+- **GitHub development environment:** this repository, including
+  [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json).
+- **Sane repo structure and teammate conventions:** the “Repo structure,”
+  “Conventions,” and “Clone and run” sections in this README.
+- **Architecture diagram and component descriptions:**
+  [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#diagram) and its
+  [component list](docs/ARCHITECTURE.md#components).
+- **Prototype:** [`frontend/index.html`](frontend/index.html) accepts a
+  question; [`src/app/`](src/app/) handles it through Bedrock when available
+  and otherwise returns a labeled stub response. The live POST endpoint is
+  listed above.
+- **Architecture narrative:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+  explains the design, AWS services, Learner Lab constraints, and tradeoffs.
+- **Code provenance and AI use:**
+  [`docs/PROVENANCE.md`](docs/PROVENANCE.md) records what was human-written
+  versus agent-generated, the Operator/Agent/Critic roles, and the human
+  review and testing performed on each change.
+- **Learner Lab deployment evidence:**
+  [`docs/LEARNER_LAB_REVIEW.md`](docs/LEARNER_LAB_REVIEW.md), the live API
+  above, and the demo screenshot below.
+
 ## Demo
 
 The frontend running against the live deployment above, answering via the
